@@ -1,29 +1,49 @@
-┌─────────────────────────┐                                                          
-│ProductoDTO              │                                                          
-├─────────────────────────┤  ┌──────────────────────────┐   ┌───────────────────────┐
-│- idProducto: Long       │  │CarritoDTO                │   │UsuarioDTO             │
-│- nombreProducto: String │  ├──────────────────────────┤   ├───────────────────────┤
-│- cantidad: Integer      │  │- idCarrito: Long         │   │- id: Long             │
-│- precioUnitario: Integer│  │- idUsuario: Long         │   │- telefono: int        │
-│                         │--│- fechaCreacion: LocalDate│---│- fechaRegistro: String│
-│+ crearProducto()        │  │- subtotal: Double        │   │                       │
-│+ listarProductos()      │  │- total: Double           │   │+ historialPedidos()   │
-│+ eliminarProducto()     │  │                          │   │+ agregarDireccion()   │
-│+ actualizarStock()      │  │+ method(type): type      │   └───────────────────────┘
-│+ calcularTotal()        │  └──────────────────────────┘                            
-└─────────────────────────┘                |                                         
-                                           |                                         
-                                           |                                         
-                                 ┌───────────────────┐                               
-                                 │Pedido             │   ┌────────────────────┐      
-                                 ├───────────────────┤   │VentaDTO            │      
-                                 │- idPedido: Long   │   ├────────────────────┤      
-                                 │- idCarrito: Long  │   │- id: Long          │      
-                                 │- idVenta: Long    │   │- fechaVenta: String│      
-                                 │- fecha: String    │---│- total: Double     │      
-                                 │- estado: boolean  │   │                    │      
-                                 │- total: int       │   │+ listarVenta()     │      
-                                 │                   │   │+ generarBoleta()   │      
-                                 │+ confirmarPedido()│   │+ generarFactura()  │      
-                                 │+ cancelarPedido() │   └────────────────────┘      
-                                 └───────────────────┘  
++--------------------------------------------------+
+|                    Catalogo                      |
++--------------------------------------------------+
+| - idCatalogo: Long                               |
+| - nombre: String                                 |
+| - productos: List<Producto>                      |
+| - fechaActualizacion: LocalDate                  |
++--------------------------------------------------+
+
+                  |
+                  | contiene
+                  v
+
++--------------------------------------------------+
+|                    Producto                      |
++--------------------------------------------------+
+| - idProducto: Long                               |
+| - idInventario: Long                             |
+| - titulo: String                                 |
+| - autor: String                                  |
+| - editorial: String                              |
+| - descripcion: String                            |
+| - precio: Double                                 |
+| - isbn: String                                   |
+| - estado: String                                 |
++--------------------------------------------------+
+
+        | pertenece a                 | tiene
+        v                             v
+
++----------------------+     +----------------------+
+|      Categoria       |     |       Reseña         |
++----------------------+     +----------------------+
+| - idCategoria: Long  |     | - idReseña: Long     |
+| - nombre: String     |     | - comentario:String  |
+| - descripcion:String |     | - calificacion:int   |
++----------------------+     | - fecha: LocalDate   |
+                             +----------------------+
+
+                  |
+                  | consulta stock desde
+                  v
+
++--------------------------------------------------+
+|                 InventarioDTO                    |
++--------------------------------------------------+
+| - idInventario: Long                             |
+| - stockDisponible: int                           |
++--------------------------------------------------+
