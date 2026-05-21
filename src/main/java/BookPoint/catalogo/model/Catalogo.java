@@ -21,6 +21,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "Catalogo")
 public class Catalogo {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idCatalogo;
