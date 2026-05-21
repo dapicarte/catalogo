@@ -1,3 +1,5 @@
+# Diagrama de Clases
+## Microservicio CATALOGO
 ```text
 +--------------------------------------------------+
 |                    Catalogo                      |
