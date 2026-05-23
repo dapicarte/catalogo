@@ -1,5 +1,6 @@
 package BookPoint.catalogo.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.Column;
@@ -52,7 +53,7 @@ public class Producto {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_catalogo", nullable = false)
-    @JsonManagedReference
+    @JsonBackReference
     @ToString.Exclude
     private Catalogo catalogo;
 }

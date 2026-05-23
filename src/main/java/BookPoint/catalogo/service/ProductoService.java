@@ -1,5 +1,7 @@
 package BookPoint.catalogo.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,8 +15,11 @@ public class ProductoService {
     @Autowired
     private ProductoRepository productoRepository;
 
-    public Producto crearProducto(Producto producto){
+    public Producto registrarProducto(Producto producto){
         return productoRepository.save(producto);
     }
     
+    public List<Producto> listarProductos(){
+        return productoRepository.findAll();
+    }
 }
