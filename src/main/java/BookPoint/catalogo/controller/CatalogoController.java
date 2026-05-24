@@ -36,6 +36,5 @@ public class CatalogoController {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
         return new ResponseEntity<>(catalogo, HttpStatus.OK);
-    }
-    
+    }    
 }
