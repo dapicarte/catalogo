@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 
 import BookPoint.catalogo.model.Producto;
 import BookPoint.catalogo.model.Resenia;
-import BookPoint.catalogo.repository.ProductoRepository;
 import BookPoint.catalogo.repository.ReseniaRepository;
 import jakarta.transaction.Transactional;
 
