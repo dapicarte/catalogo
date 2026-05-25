@@ -3,6 +3,7 @@ package BookPoint.catalogo.model;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
@@ -13,6 +14,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -35,18 +38,21 @@ public class Producto {
     private Long idInventario;
 
     @Column(nullable = false)
+    private String tipoProducto;
+
+    @Column(nullable = false)
     private String titulo;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String autor;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String editorial;
 
     @Column(nullable = false)
     private String descripcion;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String isbn;
 
     @Column(nullable = false)
@@ -64,4 +70,10 @@ public class Producto {
     @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<Resenia> resenias;
+
+    @ManyToMany
+    @JoinTable(name = "producto_categoria", joinColumns = @JoinColumn(name = "id_producto"), inverseJoinColumns = @JoinColumn(name = "id_categoria"))
+    //@JsonManagedReference
+    @JsonIgnoreProperties
+    private List<Categoria> categorias;
 }
