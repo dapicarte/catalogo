@@ -121,6 +121,7 @@ Actualiza un producto existente incluyendo sus categorías.
 **JSON de entrada:**
 ```json
 {
+    "idInventario": 1,
     "titulo": "El Señor de los Anillos",
     "autor": "J. R. R. Tolkien",
     "editorial": "Minotauro",
@@ -129,6 +130,9 @@ Actualiza un producto existente incluyendo sus categorías.
     "precioUnitario": 25990,
     "estado": true,
     "tipoProducto": "LIBRO",
+    "catalogo": {
+        "idCatalogo": 1
+    },
     "categorias": [
         {"idCategoria": 1},
         {"idCategoria": 2}
