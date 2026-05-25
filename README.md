@@ -10,6 +10,47 @@
 
 ---
 
+## Endpoints Catálogo
+
+### POST `/api/v1/catalogo`
+Crea un nuevo catálogo.
+
+**JSON de entrada:**
+```json
+{
+    "nombreCatalogo": "Catálogo 2026"
+}
+```
+
+---
+
+### GET `/api/v1/catalogo`
+Lista todos los catálogos con sus productos.
+
+---
+
+### GET `/api/v1/catalogo/{id}`
+Obtiene un catálogo por su id.
+
+---
+
+### PUT `/api/v1/catalogo/{id}`
+Actualiza el nombre de un catálogo.
+
+**JSON de entrada:**
+```json
+{
+    "nombreCatalogo": "Catálogo Actualizado 2026"
+}
+```
+
+---
+
+### DELETE `/api/v1/catalogo/{id}`
+Elimina un catálogo por su id.
+
+---
+
 ## Endpoints Producto
 
 ### POST `/api/v1/productos`
@@ -96,7 +137,7 @@ Actualiza un producto existente incluyendo sus categorías.
 
 ## Endpoints Categoría
 
-### POST `/api/v1/categorias`
+### POST `/api/v1/categoria`
 Crea una nueva categoría.
 
 **JSON de entrada:**
@@ -109,25 +150,25 @@ Crea una nueva categoría.
 
 ---
 
-### GET `/api/v1/categorias`
+### GET `/api/v1/categoria`
 Lista todas las categorías.
 
 ---
 
-### GET `/api/v1/categorias/{id}`
+### GET `/api/v1/categoria/{id}`
 Obtiene una categoría por su id.
 
 ---
 
-### DELETE `/api/v1/categorias/{id}`
+### DELETE `/api/v1/categoria/{id}`
 Elimina una categoría por su id.
 
 ---
 
 ## Endpoints Reseña
 
-### POST `/api/v1/resenias`
-Crea una nueva reseña para un producto.
+### POST `/api/v1/resenias/{idProducto}`
+Crea una nueva reseña para un producto específico.
 
 ---
 
@@ -136,35 +177,13 @@ Lista todas las reseñas.
 
 ---
 
-### GET `/api/v1/resenias/{id}`
-Obtiene una reseña por su id.
+### PUT `/api/v1/resenias/{id}`
+Actualiza una reseña existente.
 
 ---
 
 ### DELETE `/api/v1/resenias/{id}`
 Elimina una reseña por su id.
-
----
-
-## Endpoints Catálogo
-
-### POST `/api/v1/catalogo`
-Crea un nuevo catálogo.
-
----
-
-### GET `/api/v1/catalogo`
-Lista todos los catálogos con sus productos.
-
----
-
-### GET `/api/v1/catalogo/{id}`
-Obtiene un catálogo por su id.
-
----
-
-### DELETE `/api/v1/catalogo/{id}`
-Elimina un catálogo por su id.
 
 ---
 

@@ -35,4 +35,22 @@ public class ReseniaService {
     public List<Resenia> listarResenias(){
         return reseniaRepository.findAll();
     }
+
+    public boolean eliminarResenia(Long id) {
+        if (reseniaRepository.existsById(id)) {
+            reseniaRepository.deleteById(id);
+            return true;
+        }
+        return false;
+    }
+
+    public Resenia actualizarResenia(Long id, Resenia resenia) {
+        Resenia buscado = reseniaRepository.findById(id).orElse(null);
+        if (buscado == null) return null;
+
+        buscado.setComentario(resenia.getComentario());
+        buscado.setCalificacion(resenia.getCalificacion());
+
+        return reseniaRepository.save(buscado);
+    }
 }
