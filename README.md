@@ -59,6 +59,7 @@ Crea un nuevo producto.
 **JSON de entrada:**
 ```json
 {
+    "idInventario":1,
     "titulo": "El Señor de los Anillos",
     "autor": "J. R. R. Tolkien",
     "editorial": "Minotauro",
@@ -67,6 +68,8 @@ Crea un nuevo producto.
     "precioUnitario": 25990,
     "estado": true,
     "tipoProducto": "LIBRO",
+    "catalogo":{
+        "idCatalogo": 1},
     "categorias": [
         {"idCategoria": 1}
     ]
