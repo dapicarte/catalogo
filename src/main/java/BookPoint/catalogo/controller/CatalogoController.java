@@ -15,7 +15,7 @@ import BookPoint.catalogo.model.Catalogo;
 import BookPoint.catalogo.service.CatalogoService;
 
 @RestController
-@RequestMapping("api/catalogo")
+@RequestMapping("api/v1/catalogo")
 public class CatalogoController {
     @Autowired
     private CatalogoService catalogoService;

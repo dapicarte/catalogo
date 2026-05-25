@@ -16,7 +16,7 @@ import BookPoint.catalogo.model.Resenia;
 import BookPoint.catalogo.service.ReseniaService;
 
 @RestController
-@RequestMapping("api/resenias")
+@RequestMapping("api/v1/resenias")
 public class ReseniaController {
     @Autowired
     private ReseniaService reseniaService;
