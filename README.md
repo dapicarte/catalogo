@@ -1,6 +1,7 @@
 # Microservicio de Catálogo
 
 ## server.port=8090
+## Controller con HATEOAS
 
 ## Modelos
 - **Catalogo** — agrupa los productos
