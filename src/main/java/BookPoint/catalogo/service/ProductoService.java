@@ -68,4 +68,12 @@ public class ProductoService {
     public List<Producto> findByPrecioMinimo(Integer precioMin) {
         return productoRepository.findByPrecioUnitarioGreaterThanEqual(precioMin);
     }
+    
+    public boolean eliminarProducto(Long id) {
+        if (productoRepository.existsById(id)) {
+            productoRepository.deleteById(id);
+            return true;
+        }
+        return false;
+    }
 }

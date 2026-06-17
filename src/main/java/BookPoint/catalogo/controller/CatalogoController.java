@@ -2,9 +2,12 @@ package BookPoint.catalogo.controller;
 
 import java.util.List;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,50 +23,55 @@ import BookPoint.catalogo.service.CatalogoService;
 @RestController
 @RequestMapping("api/v1/catalogo")
 public class CatalogoController {
+
     @Autowired
     private CatalogoService catalogoService;
 
-    @PostMapping()
-    public ResponseEntity<Catalogo> postCatalogo(@RequestBody Catalogo catalogo){
-        try{
-            return new ResponseEntity<>(catalogoService.crearCatalogo(catalogo),HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.CONFLICT);
-        }
+    @PostMapping
+    public EntityModel<Catalogo> postCatalogo(@RequestBody Catalogo catalogo) {
+        Catalogo catalogoGuardado = catalogoService.crearCatalogo(catalogo);
+        return EntityModel.of(catalogoGuardado,
+                linkTo(methodOn(CatalogoController.class).findById(catalogoGuardado.getIdCatalogo())).withSelfRel(),
+                linkTo(methodOn(CatalogoController.class).getCatalogo()).withRel("catalogos"));
     }
 
     @GetMapping
-    public ResponseEntity<List<Catalogo>> getCatalogo(){
-        List<Catalogo> catalogo = catalogoService.listarCatalogo();
-        if(catalogo.isEmpty()){
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        }
-        return new ResponseEntity<>(catalogo, HttpStatus.OK);
-    }    
+    public CollectionModel<EntityModel<Catalogo>> getCatalogo() {
+        List<Catalogo> catalogos = catalogoService.listarCatalogo();
+        List<EntityModel<Catalogo>> catalogosConLinks = catalogos.stream()
+                .map(catalogo -> EntityModel.of(catalogo,
+                        linkTo(methodOn(CatalogoController.class).findById(catalogo.getIdCatalogo())).withSelfRel()))
+                .toList();
+        return CollectionModel.of(catalogosConLinks,
+                linkTo(methodOn(CatalogoController.class).getCatalogo()).withSelfRel());
+    }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> findById(@PathVariable Long id) {
-        Catalogo buscado = catalogoService.findById(id).orElse(null);
-        if (buscado == null) {
-            return new ResponseEntity<>("Catalogo con id " + id + " no existe", HttpStatus.NOT_FOUND);
-        }
-        return new ResponseEntity<>(buscado, HttpStatus.OK);
+    public ResponseEntity<EntityModel<Catalogo>> findById(@PathVariable Long id) {
+        return catalogoService.findById(id)
+                .map(catalogo -> ResponseEntity.ok(EntityModel.of(catalogo,
+                        linkTo(methodOn(CatalogoController.class).findById(id)).withSelfRel(),
+                        linkTo(methodOn(CatalogoController.class).getCatalogo()).withRel("catalogos"))))
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> actualizarCatalogo(@PathVariable Long id, @RequestBody Catalogo catalogo) {
-        Catalogo actualizado = catalogoService.actualizarCatalogo(id, catalogo);
-        if (actualizado == null) {
-            return new ResponseEntity<>("Catalogo con id " + id + " no existe", HttpStatus.NOT_FOUND);
+    public ResponseEntity<EntityModel<Catalogo>> actualizarCatalogo(@PathVariable Long id, @RequestBody Catalogo catalogo) {
+        try {
+            Catalogo actualizado = catalogoService.actualizarCatalogo(id, catalogo);
+            return ResponseEntity.ok(EntityModel.of(actualizado,
+                    linkTo(methodOn(CatalogoController.class).findById(id)).withSelfRel(),
+                    linkTo(methodOn(CatalogoController.class).getCatalogo()).withRel("catalogos")));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
-        return new ResponseEntity<>(actualizado, HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> eliminarCatalogo(@PathVariable Long id) {
+    public ResponseEntity<Void> eliminarCatalogo(@PathVariable Long id) {
         if (catalogoService.eliminarCatalogo(id)) {
-            return new ResponseEntity<>("Catalogo con id " + id + " eliminado correctamente", HttpStatus.OK);
+            return ResponseEntity.noContent().build();
         }
-        return new ResponseEntity<>("Catalogo con id " + id + " no existe", HttpStatus.NOT_FOUND);
+        return ResponseEntity.notFound().build();
     }
 }

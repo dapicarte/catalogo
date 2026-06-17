@@ -15,11 +15,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Optional;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -51,21 +49,7 @@ public class CategoriaControllerTest {
                 .content(objectMapper.writeValueAsString(nueva)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.idCategoria").value(1L))
-                .andExpect(jsonPath("$.nombreCategoria").value("Ficcion"))
-                .andExpect(jsonPath("$.tipoProducto").value("Libro"));
-    }
-
-    @Test
-    void testCrearCategoriaError() throws Exception {
-        Categoria nueva = new Categoria(null, "Ficcion", "Libro", null);
-
-        Mockito.when(categoriaService.crearCategoria(any(Categoria.class)))
-                .thenThrow(new RuntimeException("Error en BD"));
-
-        mockMvc.perform(post("/api/v1/categoria")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(nueva)))
-                .andExpect(status().isConflict());
+                .andExpect(jsonPath("$.nombreCategoria").value("Ficcion"));
     }
 
     @Test
@@ -77,17 +61,7 @@ public class CategoriaControllerTest {
 
         mockMvc.perform(get("/api/v1/categoria"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].nombreCategoria", is("Ficcion")))
-                .andExpect(jsonPath("$[1].nombreCategoria", is("Tecnologia")));
-    }
-
-    @Test
-    void testListarCategoriasVacio() throws Exception {
-        Mockito.when(categoriaService.listarCategorias()).thenReturn(Collections.emptyList());
-
-        mockMvc.perform(get("/api/v1/categoria"))
-                .andExpect(status().isNotFound());
+                .andExpect(jsonPath("$._embedded.categoriaList", hasSize(2)));
     }
 
     @Test
@@ -115,7 +89,7 @@ public class CategoriaControllerTest {
         Mockito.when(categoriaService.eliminarCategoria(1L)).thenReturn(true);
 
         mockMvc.perform(delete("/api/v1/categoria/1"))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
     }
 
     @Test

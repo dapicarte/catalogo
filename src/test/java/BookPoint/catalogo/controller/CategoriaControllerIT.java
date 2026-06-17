@@ -39,7 +39,7 @@ class CategoriaControllerIT {
     }
 
     @Test
-    void testCrearYObtenerCategoria() throws Exception {
+    void testCrearYListarCategoria() throws Exception {
         Categoria categoria = new Categoria(null, "Ficcion", "Libro", null);
 
         mockMvc.perform(post("/api/v1/categoria")
@@ -51,7 +51,7 @@ class CategoriaControllerIT {
 
         mockMvc.perform(get("/api/v1/categoria"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].nombreCategoria").value("Ficcion"));
+                .andExpect(jsonPath("$._embedded.categoriaList[0].nombreCategoria").value("Ficcion"));
     }
 
     @Test
@@ -60,7 +60,7 @@ class CategoriaControllerIT {
         Categoria guardada = categoriaRepository.save(categoria);
 
         mockMvc.perform(delete("/api/v1/categoria/" + guardada.getIdCategoria()))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
         mockMvc.perform(get("/api/v1/categoria/" + guardada.getIdCategoria()))
                 .andExpect(status().isNotFound());

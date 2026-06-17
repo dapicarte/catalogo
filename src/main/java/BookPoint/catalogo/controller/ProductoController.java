@@ -1,11 +1,15 @@
 package BookPoint.catalogo.controller;
 
 import java.util.List;
-import java.util.Optional;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,41 +25,38 @@ import BookPoint.catalogo.service.ProductoService;
 @RestController
 @RequestMapping("/api/v1/productos")
 public class ProductoController {
+
     @Autowired
     private ProductoService productoService;
 
-    @PostMapping()
-    public ResponseEntity<Producto> postProducto(@RequestBody Producto producto){
-        try{
-            return new ResponseEntity<>(productoService.registrarProducto(producto),HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.CONFLICT);
-        }
+    @PostMapping
+    public EntityModel<Producto> postProducto(@RequestBody Producto producto) {
+        Producto productoGuardado = productoService.registrarProducto(producto);
+        return EntityModel.of(productoGuardado,
+                linkTo(methodOn(ProductoController.class).getProductoPorId(productoGuardado.getIdProducto()))
+                        .withSelfRel(),
+                linkTo(methodOn(ProductoController.class).getCatalogo()).withRel("productos"));
     }
 
     @GetMapping
-    public ResponseEntity<List<Producto>> getCatalogo(){
-        List<Producto> catalogo = productoService.listarProductos();
-        if(catalogo.isEmpty()){
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        }
-        return new ResponseEntity<>(HttpStatus.OK);
+    public CollectionModel<EntityModel<Producto>> getCatalogo() {
+        List<Producto> productos = productoService.listarProductos();
+        List<EntityModel<Producto>> productosConLinks = productos.stream()
+                .map(producto -> EntityModel.of(producto,
+                        linkTo(methodOn(ProductoController.class).getProductoPorId(producto.getIdProducto()))
+                                .withSelfRel()))
+                .toList();
+        return CollectionModel.of(productosConLinks,
+                linkTo(methodOn(ProductoController.class).getCatalogo()).withSelfRel());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Producto> getProductoPorId(@PathVariable Long id) {
-        try {
-            Optional<Producto> producto = productoService.findByIdProducto(id);
-
-            if (producto.isPresent()) {
-                return new ResponseEntity<>(producto.get(), HttpStatus.OK);
-            }
-
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.CONFLICT);
-        }
+    public ResponseEntity<EntityModel<Producto>> getProductoPorId(@PathVariable Long id) {
+        return productoService.findByIdProducto(id)
+                .map(producto -> ResponseEntity.ok(EntityModel.of(producto,
+                        linkTo(methodOn(ProductoController.class).getProductoPorId(id)).withSelfRel(),
+                        linkTo(methodOn(ProductoController.class).getCatalogo()).withRel("productos"))))
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/autor/{autor}")
@@ -71,7 +72,8 @@ public class ProductoController {
     public ResponseEntity<?> findByEditorial(@PathVariable String editorial) {
         List<Producto> productos = productoService.findByEditorial(editorial);
         if (productos.isEmpty()) {
-            return new ResponseEntity<>("No se encontraron productos de la editorial " + editorial, HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>("No se encontraron productos de la editorial " + editorial,
+                    HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(productos, HttpStatus.OK);
     }
@@ -80,24 +82,29 @@ public class ProductoController {
     public ResponseEntity<?> findByCategoria(@PathVariable String nombreCategoria) {
         List<Producto> productos = productoService.findByCategoria(nombreCategoria);
         if (productos.isEmpty()) {
-            return new ResponseEntity<>("No se encontraron productos de la categoría " + nombreCategoria, HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>("No se encontraron productos de la categoría " + nombreCategoria,
+                    HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(productos, HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> actualizarProducto(@PathVariable Long id, @RequestBody Producto producto) {
-        Producto actualizado = productoService.actualizarProducto(id, producto);
-        if (actualizado == null) {
-            return new ResponseEntity<>("Producto con id " + id + " no existe", HttpStatus.NOT_FOUND);
+    public ResponseEntity<EntityModel<Producto>> actualizarProducto(@PathVariable Long id,
+            @RequestBody Producto producto) {
+        try {
+            Producto actualizado = productoService.actualizarProducto(id, producto);
+            return ResponseEntity.ok(EntityModel.of(actualizado,
+                    linkTo(methodOn(ProductoController.class).getProductoPorId(id)).withSelfRel(),
+                    linkTo(methodOn(ProductoController.class).getCatalogo()).withRel("productos")));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
-        return new ResponseEntity<>(actualizado, HttpStatus.OK);
     }
 
     @GetMapping("/precio")
     public ResponseEntity<?> findByRangoPrecio(
-        @RequestParam(required = false) Integer precioMin,
-        @RequestParam(required = false) Integer precioMax) {
+            @RequestParam(required = false) Integer precioMin,
+            @RequestParam(required = false) Integer precioMax) {
 
         List<Producto> productos;
         if (precioMin != null && precioMax != null) {
@@ -113,5 +120,13 @@ public class ProductoController {
             return new ResponseEntity<>("No se encontraron productos en ese rango de precio", HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(productos, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarProducto(@PathVariable Long id) {
+        if (productoService.eliminarProducto(id)) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
     }
 }

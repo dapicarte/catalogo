@@ -15,6 +15,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDate;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -40,30 +42,30 @@ class CatalogoControllerIT {
     }
 
     @Test
-    void testCrearYObtenerCatalogo() throws Exception {
+    void testCrearYListarCatalogo() throws Exception {
         Catalogo catalogo = new Catalogo(null, "Verano 2026", null, null);
 
         mockMvc.perform(post("/api/v1/catalogo")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(catalogo)))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.idCatalogo").exists())
-            .andExpect(jsonPath("$.nombreCatalogo").value("Verano 2026"));
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(catalogo)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.idCatalogo").exists())
+                .andExpect(jsonPath("$.nombreCatalogo").value("Verano 2026"));
 
         mockMvc.perform(get("/api/v1/catalogo"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$[0].nombreCatalogo").value("Verano 2026"));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$._embedded.catalogoList[0].nombreCatalogo").value("Verano 2026"));
     }
 
     @Test
     void testEliminarCatalogo() throws Exception {
-        Catalogo catalogo = new Catalogo(null, "Verano 2026", java.time.LocalDate.now(), null);
-        Catalogo guardado = catalogoRepository.save(catalogo);
+        Catalogo catalogo = new Catalogo(null, "Verano 2026", LocalDate.now(), null);
+        Catalogo guardada = catalogoRepository.save(catalogo);
 
-        mockMvc.perform(delete("/api/v1/catalogo/" + guardado.getIdCatalogo()))
-            .andExpect(status().isOk());
+        mockMvc.perform(delete("/api/v1/catalogo/" + guardada.getIdCatalogo()))
+                .andExpect(status().isNoContent());
 
-        mockMvc.perform(get("/api/v1/catalogo/" + guardado.getIdCatalogo()))
-            .andExpect(status().isNotFound());
+        mockMvc.perform(get("/api/v1/catalogo/" + guardada.getIdCatalogo()))
+                .andExpect(status().isNotFound());
     }
 }

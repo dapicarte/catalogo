@@ -1,10 +1,12 @@
 package BookPoint.catalogo.controller;
 
 import java.util.List;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,38 +26,38 @@ public class CategoriaController {
     private CategoriaService categoriaService;
 
     @PostMapping
-    public ResponseEntity<?> crearCategoria(@RequestBody Categoria categoria) {
-        try {
-            return new ResponseEntity<>(categoriaService.crearCategoria(categoria), HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>("Error al crear la categoria", HttpStatus.CONFLICT);
-        }
+    public EntityModel<Categoria> crearCategoria(@RequestBody Categoria categoria) {
+        Categoria categoriaGuardada = categoriaService.crearCategoria(categoria);
+        return EntityModel.of(categoriaGuardada,
+                linkTo(methodOn(CategoriaController.class).findById(categoriaGuardada.getIdCategoria())).withSelfRel(),
+                linkTo(methodOn(CategoriaController.class).listarCategorias()).withRel("categorias"));
     }
 
     @GetMapping
-    public ResponseEntity<?> listarCategorias() {
+    public CollectionModel<EntityModel<Categoria>> listarCategorias() {
         List<Categoria> categorias = categoriaService.listarCategorias();
-        if (categorias.isEmpty()) {
-            return new ResponseEntity<>("No existen categorias registradas", HttpStatus.NOT_FOUND);
-        }
-        return new ResponseEntity<>(categorias, HttpStatus.OK);
+        List<EntityModel<Categoria>> categoriasConLinks = categorias.stream()
+                .map(categoria -> EntityModel.of(categoria,
+                        linkTo(methodOn(CategoriaController.class).findById(categoria.getIdCategoria())).withSelfRel()))
+                .toList();
+        return CollectionModel.of(categoriasConLinks,
+                linkTo(methodOn(CategoriaController.class).listarCategorias()).withSelfRel());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> findById(@PathVariable Long id) {
-        Categoria buscado = categoriaService.findById(id).orElse(null);
-        if (buscado == null) {
-            return new ResponseEntity<>("Categoria con id " + id + " no existe", HttpStatus.NOT_FOUND);
-        }
-        return new ResponseEntity<>(buscado, HttpStatus.OK);
+    public ResponseEntity<EntityModel<Categoria>> findById(@PathVariable Long id) {
+        return categoriaService.findById(id)
+                .map(categoria -> ResponseEntity.ok(EntityModel.of(categoria,
+                        linkTo(methodOn(CategoriaController.class).findById(id)).withSelfRel(),
+                        linkTo(methodOn(CategoriaController.class).listarCategorias()).withRel("categorias"))))
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> eliminarCategoria(@PathVariable Long id) {
+    public ResponseEntity<Void> eliminarCategoria(@PathVariable Long id) {
         if (categoriaService.eliminarCategoria(id)) {
-            return new ResponseEntity<>("Categoria con id " + id + " eliminada correctamente", HttpStatus.OK);
+            return ResponseEntity.noContent().build();
         }
-        return new ResponseEntity<>("Categoria con id " + id + " no existe", HttpStatus.NOT_FOUND);
+        return ResponseEntity.notFound().build();
     }
 }
-
