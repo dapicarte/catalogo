@@ -1,199 +1,255 @@
-# Microservicio de Catálogo
+# BookPoint · Microservicio de Catálogo (`ms-catalogo`)
 
-## server.port=8090
-## Controller con HATEOAS
-
-## Modelos
-- **Catalogo** — agrupa los productos
-- **Producto** — libros y útiles
-- **Categoria** — géneros o tipos de producto
-- **Reseña** — calificaciones de productos
+Microservicio encargado de la gestión del catálogo de productos dentro del sistema **BookPoint**. Expone una API REST con soporte **HATEOAS** y administra libros, útiles escolares, categorías y reseñas de productos.
 
 ---
 
-## Endpoints Catálogo
+## 🛠️ Tecnologías
 
-### POST `/api/v1/catalogo`
-Crea un nuevo catálogo.
+- **Java 24**
+- **Spring Boot 4.0.6**
+- **Spring Web MVC**
+- **Spring HATEOAS** — respuestas con `EntityModel` / `CollectionModel`
+- **Spring Data JPA**
+- **MySQL** (entorno de producción/desarrollo)
+- **H2** (base de datos en memoria para tests)
+- **Lombok** — reducción de código boilerplate
+- **Jackson** — serialización/deserialización JSON
+- **Spring Boot Actuator** — monitoreo del microservicio
+- **JUnit 5 + Mockito** — pruebas unitarias e integración
 
-**JSON de entrada:**
+---
+
+## 🏗️ Rol en la arquitectura
+
+`ms-catalogo` gestiona todos los productos del sistema y es consultado por otros microservicios.
+
+| Microservicio | Para qué se consulta |
+|---------------|----------------------|
+| `ms-inventario` | Validar que el producto existe al registrar stock |
+
+```
+Cliente → Gateway (8080) → ms-catalogo (8090)
+                                │
+                                └── Consultado por ms-inventario
+```
+
+---
+
+## ✅ Requisitos previos
+
+- JDK 24 o superior
+- Maven 3.8+
+- MySQL en ejecución (para el perfil por defecto)
+
+---
+
+## ⚙️ Configuración
+
+### `src/main/resources/application.properties`
+
+```properties
+spring.application.name=catalogo
+server.port=8090
+
+spring.datasource.url=jdbc:mysql://localhost:3306/catalogodb
+spring.datasource.username=root
+spring.datasource.password=
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
+```
+
+### `src/test/resources/application-test.properties`
+
+```properties
+spring.datasource.url=jdbc:h2:mem:testdb
+spring.datasource.driver-class-name=org.h2.Driver
+spring.datasource.username=sa
+spring.datasource.password=
+spring.jpa.hibernate.ddl-auto=create-drop
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.H2Dialect
+```
+
+---
+
+## 🌐 Acceso vía API Gateway
+
+En producción no se accede directo al puerto `8090`, sino a través del gateway en el puerto `8080`:
+
+```
+GET http://localhost:8080/api/v1/productos
+```
+
+Rutas configuradas en el gateway:
+
+```yaml
+- id: ms-catalogo
+  uri: http://localhost:8090
+  predicates:
+    - Path=/api/v1/catalogo,/api/v1/catalogo/**,/api/v1/productos,/api/v1/productos/**,/api/v1/categoria,/api/v1/categoria/**,/api/v1/resenias,/api/v1/resenias/**
+```
+
+---
+
+## 📡 Endpoints
+
+### Catálogo — Base: `/api/v1/catalogo`
+
+| Método | Endpoint | Descripción | Código éxito |
+|--------|----------|-------------|--------------|
+| `GET` | `/api/v1/catalogo` | Listar todos los catálogos | `200 OK` |
+| `GET` | `/api/v1/catalogo/{id}` | Obtener catálogo por ID | `200 OK` |
+| `POST` | `/api/v1/catalogo` | Crear nuevo catálogo | `200 OK` |
+| `PUT` | `/api/v1/catalogo/{id}` | Actualizar catálogo | `200 OK` |
+| `DELETE` | `/api/v1/catalogo/{id}` | Eliminar catálogo | `204 No Content` |
+
+### Producto — Base: `/api/v1/productos`
+
+| Método | Endpoint | Descripción | Código éxito |
+|--------|----------|-------------|--------------|
+| `GET` | `/api/v1/productos` | Listar todos los productos | `200 OK` |
+| `GET` | `/api/v1/productos/{id}` | Obtener producto por ID | `200 OK` |
+| `GET` | `/api/v1/productos/autor/{autor}` | Filtrar por autor | `200 OK` |
+| `GET` | `/api/v1/productos/editorial/{editorial}` | Filtrar por editorial | `200 OK` |
+| `GET` | `/api/v1/productos/categoria/{nombreCategoria}` | Filtrar por categoría | `200 OK` |
+| `GET` | `/api/v1/productos/precio?precioMin={min}&precioMax={max}` | Filtrar por rango de precio | `200 OK` |
+| `POST` | `/api/v1/productos` | Crear nuevo producto | `200 OK` |
+| `PUT` | `/api/v1/productos/{id}` | Actualizar producto | `200 OK` |
+| `DELETE` | `/api/v1/productos/{id}` | Eliminar producto | `204 No Content` |
+
+### Categoría — Base: `/api/v1/categoria`
+
+| Método | Endpoint | Descripción | Código éxito |
+|--------|----------|-------------|--------------|
+| `GET` | `/api/v1/categoria` | Listar todas las categorías | `200 OK` |
+| `GET` | `/api/v1/categoria/{id}` | Obtener categoría por ID | `200 OK` |
+| `POST` | `/api/v1/categoria` | Crear nueva categoría | `200 OK` |
+| `DELETE` | `/api/v1/categoria/{id}` | Eliminar categoría | `204 No Content` |
+
+### Reseña — Base: `/api/v1/resenias`
+
+| Método | Endpoint | Descripción | Código éxito |
+|--------|----------|-------------|--------------|
+| `GET` | `/api/v1/resenias` | Listar todas las reseñas | `200 OK` |
+| `POST` | `/api/v1/resenias/{idProducto}` | Crear reseña para un producto | `200 OK` |
+| `PUT` | `/api/v1/resenias/{id}` | Actualizar reseña | `200 OK` |
+| `DELETE` | `/api/v1/resenias/{id}` | Eliminar reseña | `204 No Content` |
+
+### Ejemplo de respuesta HATEOAS
+
 ```json
 {
-    "nombreCatalogo": "Catálogo 2026"
+  "idProducto": 1,
+  "titulo": "El Señor de los Anillos",
+  "autor": "J. R. R. Tolkien",
+  "editorial": "Minotauro",
+  "precioUnitario": 25990,
+  "categorias": [
+    {
+      "idCategoria": 1,
+      "nombreCategoria": "Fantasía",
+      "tipoProducto": "LIBRO"
+    }
+  ],
+  "_links": {
+    "self": { "href": "http://localhost:8090/api/v1/productos/1" },
+    "productos": { "href": "http://localhost:8090/api/v1/productos" }
+  }
 }
 ```
 
 ---
 
-### GET `/api/v1/catalogo`
-Lista todos los catálogos con sus productos.
+## 🗂️ Modelos de datos
+
+### `Producto`
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `idProducto` | `Long` | Identificador único (PK) |
+| `idInventario` | `Long` | ID del inventario asociado |
+| `tipoProducto` | `String` | `LIBRO` o `UTIL` |
+| `titulo` | `String` | Título del producto |
+| `autor` | `String` | Autor (solo libros) |
+| `editorial` | `String` | Editorial (solo libros) |
+| `descripcion` | `String` | Descripción del producto |
+| `isbn` | `String` | ISBN (solo libros) |
+| `precioUnitario` | `Integer` | Precio en pesos chilenos |
+| `estado` | `boolean` | Disponibilidad del producto |
+
+### `Categoria`
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `idCategoria` | `Long` | Identificador único (PK) |
+| `nombreCategoria` | `String` | Nombre de la categoría |
+| `tipoProducto` | `String` | `LIBRO` o `UTIL` |
+
+### `Resenia`
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `idReseña` | `Long` | Identificador único (PK) |
+| `comentario` | `String` | Comentario del cliente |
+| `calificacion` | `Integer` | Calificación del producto |
+| `fechaReseña` | `LocalDate` | Fecha de la reseña |
 
 ---
 
-### GET `/api/v1/catalogo/{id}`
-Obtiene un catálogo por su id.
+## 🧪 Tests
+
+- **Pruebas unitarias:** `@ExtendWith(MockitoExtension.class)` con `@Mock` / `@InjectMocks`
+- **Pruebas de integración:** `@SpringBootTest` + `@AutoConfigureMockMvc` + `@ActiveProfiles("test")`
+- Base de datos H2 en memoria para tests
 
 ---
 
-### PUT `/api/v1/catalogo/{id}`
-Actualiza el nombre de un catálogo.
+## 📁 Estructura del proyecto
 
-**JSON de entrada:**
-```json
-{
-    "nombreCatalogo": "Catálogo Actualizado 2026"
-}
+```
+ms-catalogo/
+├── src/
+│   ├── main/
+│   │   ├── java/BookPoint/catalogo/
+│   │   │   ├── controller/
+│   │   │   │   ├── CatalogoController.java
+│   │   │   │   ├── CategoriaController.java
+│   │   │   │   ├── ProductoController.java
+│   │   │   │   └── ReseniaController.java
+│   │   │   ├── exception/
+│   │   │   │   └── GlobalExceptionHandler.java
+│   │   │   ├── model/
+│   │   │   │   ├── Catalogo.java
+│   │   │   │   ├── Categoria.java
+│   │   │   │   ├── Producto.java
+│   │   │   │   └── Resenia.java
+│   │   │   ├── repository/
+│   │   │   │   ├── CatalogoRepository.java
+│   │   │   │   ├── CategoriaRepository.java
+│   │   │   │   ├── ProductoRepository.java
+│   │   │   │   └── ReseniaRepository.java
+│   │   │   ├── service/
+│   │   │   │   ├── CatalogoService.java
+│   │   │   │   ├── CategoriaService.java
+│   │   │   │   ├── ProductoService.java
+│   │   │   │   └── ReseniaService.java
+│   │   │   └── CatalogoApplication.java
+│   │   └── resources/
+│   │       └── application.properties
+│   └── test/
+│       ├── java/BookPoint/catalogo/
+│       │   ├── controller/
+│       │   └── service/
+│       └── resources/
+│           └── application-test.properties
+└── pom.xml
 ```
 
 ---
 
-### DELETE `/api/v1/catalogo/{id}`
-Elimina un catálogo por su id.
+## 👤 Autor
 
----
-
-## Endpoints Producto
-
-### POST `/api/v1/productos`
-Crea un nuevo producto.
-
-**JSON de entrada:**
-```json
-{
-    "idInventario":1,
-    "titulo": "El Señor de los Anillos",
-    "autor": "J. R. R. Tolkien",
-    "editorial": "Minotauro",
-    "descripcion": "Novela épica de fantasía ambientada en la Tierra Media.",
-    "isbn": "9788445073807",
-    "precioUnitario": 25990,
-    "estado": true,
-    "tipoProducto": "LIBRO",
-    "catalogo":{
-        "idCatalogo": 1},
-    "categorias": [
-        {"idCategoria": 1}
-    ]
-}
-```
-
----
-
-### GET `/api/v1/productos`
-Lista todos los productos del catálogo.
-
----
-
-### GET `/api/v1/productos/{id}`
-Obtiene un producto por su id.
-
----
-
-### GET `/api/v1/productos/autor/{autor}`
-Filtra productos por autor.
-
----
-
-### GET `/api/v1/productos/editorial/{editorial}`
-Filtra productos por editorial.
-
----
-
-### GET `/api/v1/productos/categoria/{nombreCategoria}`
-Filtra productos por categoría o género.
-
----
-
-### GET `/api/v1/productos/precio?precioMin={min}&precioMax={max}`
-Filtra productos por rango de precio.
-
-**Ejemplos:**
-```
-GET /api/v1/productos/precio?precioMin=10000&precioMax=30000
-GET /api/v1/productos/precio?precioMax=20000
-GET /api/v1/productos/precio?precioMin=15000
-```
-
----
-
-### PUT `/api/v1/productos/{id}`
-Actualiza un producto existente incluyendo sus categorías.
-
-**JSON de entrada:**
-```json
-{
-    "idInventario": 1,
-    "titulo": "El Señor de los Anillos",
-    "autor": "J. R. R. Tolkien",
-    "editorial": "Minotauro",
-    "descripcion": "Novela épica de fantasía ambientada en la Tierra Media.",
-    "isbn": "9788445073807",
-    "precioUnitario": 25990,
-    "estado": true,
-    "tipoProducto": "LIBRO",
-    "catalogo": {
-        "idCatalogo": 1
-    },
-    "categorias": [
-        {"idCategoria": 1},
-        {"idCategoria": 2}
-    ]
-}
-```
-
----
-
-## Endpoints Categoría
-
-### POST `/api/v1/categoria`
-Crea una nueva categoría.
-
-**JSON de entrada:**
-```json
-{
-    "nombreCategoria": "Terror",
-    "tipoProducto": "LIBRO"
-}
-```
-
----
-
-### GET `/api/v1/categoria`
-Lista todas las categorías.
-
----
-
-### GET `/api/v1/categoria/{id}`
-Obtiene una categoría por su id.
-
----
-
-### DELETE `/api/v1/categoria/{id}`
-Elimina una categoría por su id.
-
----
-
-## Endpoints Reseña
-
-### POST `/api/v1/resenias/{idProducto}`
-Crea una nueva reseña para un producto específico.
-
----
-
-### GET `/api/v1/resenias`
-Lista todas las reseñas.
-
----
-
-### PUT `/api/v1/resenias/{id}`
-Actualiza una reseña existente.
-
----
-
-### DELETE `/api/v1/resenias/{id}`
-Elimina una reseña por su id.
-
----
-
-## Dependencias
-Este MS no depende de ningún otro microservicio.
+Proyecto **BookPoint** — Microservicio de Catálogo.
