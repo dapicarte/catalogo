@@ -24,10 +24,6 @@ Microservicio encargado de la gestión del catálogo de productos dentro del sis
 
 `ms-catalogo` es un microservicio proveedor — no consume otros microservicios. Es consultado por otros MS del ecosistema que necesitan información de productos.
 
-```
-ms-inventario ──► ms-catalogo (8090)
-```
-
 ---
 
 ## ✅ Requisitos previos
@@ -191,11 +187,9 @@ Rutas configuradas en el gateway:
 
 ---
 
-## 🧪 Tests
-
-- `@ExtendWith(MockitoExtension.class)` con `@Mock` / `@InjectMocks`
-- `@SpringBootTest` + `@AutoConfigureMockMvc` + `@ActiveProfiles("test")`
-- Base de datos H2 en memoria para tests
+- **Pruebas unitarias:** `@ExtendWith(MockitoExtension.class)` con `@Mock` / `@InjectMocks`.
+- **Pruebas de integración:** `@SpringBootTest` + `@AutoConfigureMockMvc` + `@ActiveProfiles("test")`.
+- Las llamadas a otros microservicios (`RestTemplate`) se mockean con Mockito.
 
 ---
 
