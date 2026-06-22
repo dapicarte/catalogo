@@ -22,16 +22,10 @@ Microservicio encargado de la gestión del catálogo de productos dentro del sis
 
 ## 🏗️ Rol en la arquitectura
 
-`ms-catalogo` gestiona todos los productos del sistema y es consultado por otros microservicios.
-
-| Microservicio | Para qué se consulta |
-|---------------|----------------------|
-| `ms-inventario` | Validar que el producto existe al registrar stock |
+`ms-catalogo` es un microservicio proveedor — no consume otros microservicios. Es consultado por otros MS del ecosistema que necesitan información de productos.
 
 ```
-Cliente → Gateway (8080) → ms-catalogo (8090)
-                                │
-                                └── Consultado por ms-inventario
+ms-inventario ──► ms-catalogo (8090)
 ```
 
 ---
@@ -76,8 +70,6 @@ spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.H2Dialect
 ---
 
 ## 🌐 Acceso vía API Gateway
-
-En producción no se accede directo al puerto `8090`, sino a través del gateway en el puerto `8080`:
 
 ```
 GET http://localhost:8080/api/v1/productos
@@ -201,8 +193,8 @@ Rutas configuradas en el gateway:
 
 ## 🧪 Tests
 
-- **Pruebas unitarias:** `@ExtendWith(MockitoExtension.class)` con `@Mock` / `@InjectMocks`
-- **Pruebas de integración:** `@SpringBootTest` + `@AutoConfigureMockMvc` + `@ActiveProfiles("test")`
+- `@ExtendWith(MockitoExtension.class)` con `@Mock` / `@InjectMocks`
+- `@SpringBootTest` + `@AutoConfigureMockMvc` + `@ActiveProfiles("test")`
 - Base de datos H2 en memoria para tests
 
 ---
@@ -215,27 +207,10 @@ ms-catalogo/
 │   ├── main/
 │   │   ├── java/BookPoint/catalogo/
 │   │   │   ├── controller/
-│   │   │   │   ├── CatalogoController.java
-│   │   │   │   ├── CategoriaController.java
-│   │   │   │   ├── ProductoController.java
-│   │   │   │   └── ReseniaController.java
 │   │   │   ├── exception/
-│   │   │   │   └── GlobalExceptionHandler.java
 │   │   │   ├── model/
-│   │   │   │   ├── Catalogo.java
-│   │   │   │   ├── Categoria.java
-│   │   │   │   ├── Producto.java
-│   │   │   │   └── Resenia.java
 │   │   │   ├── repository/
-│   │   │   │   ├── CatalogoRepository.java
-│   │   │   │   ├── CategoriaRepository.java
-│   │   │   │   ├── ProductoRepository.java
-│   │   │   │   └── ReseniaRepository.java
 │   │   │   ├── service/
-│   │   │   │   ├── CatalogoService.java
-│   │   │   │   ├── CategoriaService.java
-│   │   │   │   ├── ProductoService.java
-│   │   │   │   └── ReseniaService.java
 │   │   │   └── CatalogoApplication.java
 │   │   └── resources/
 │   │       └── application.properties
